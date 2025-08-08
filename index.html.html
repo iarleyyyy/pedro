@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Feliz Dia dos Pais</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+
+  body, html {
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    background: #111;
+    color: #8ae9ff;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* Centralizar todos os textos no centro da tela */
+  .screen1,
+  .screen2-text,
+  .loading-screen,
+  .final-screen > div {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    width: 90%;
+    max-width: 600px;
+  }
+
+  /* Tela 1 - Texto inicial */
+  .screen1 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    animation: fadeInOut 5s ease forwards;
+    z-index: 10;
+    color: #8ae9ff;
+    text-shadow:
+      0 0 5px #8ae9ff,
+      0 0 10px #8ae9ff,
+      0 0 20px #8ae9ff,
+      0 0 40px #00d8ff,
+      0 0 80px #00d8ff;
+  }
+
+  @keyframes fadeInOut {
+    0% {opacity: 0;}
+    10% {opacity: 1;}
+    90% {opacity: 1;}
+    100% {opacity: 0;}
+  }
+
+  /* Tela 2 - Fundo com pontos + texto "Feliz Dia dos Pais" */
+  .screen2 {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  #pointsCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+  }
+
+  .screen2-text {
+    font-size: 4rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: #8ae9ff;
+    text-shadow:
+      0 0 8px #8ae9ff,
+      0 0 20px #00d8ff,
+      0 0 30px #00d8ff,
+      0 0 40px #00d8ff,
+      0 0 60px #00d8ff;
+    z-index: 5;
+
+    /* Posicionado no centro */
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    width: 90%;
+    max-width: 600px;
+  }
+
+  /* Tela 3 - Loading */
+  .loading-screen {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    background: #111;
+    color: #8ae9ff;
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    user-select: none;
+    flex-direction: column;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .loading-bar {
+    margin-top: 20px;
+    width: 100%;
+    height: 10px;
+    background: #222;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow:
+      0 0 10px #8ae9ff,
+      inset 0 0 10px #8ae9ff;
+  }
+
+  .loading-progress {
+    width: 0%;
+    height: 100%;
+    background: #00d8ff;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    box-shadow:
+      0 0 15px #00d8ff;
+  }
+
+  /* Tela 4 - Texto final */
+  .final-screen {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    background: #111;
+    color: #8ae9ff;
+    font-size: 1.8rem;
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    user-select: none;
+    flex-direction: column;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    text-shadow:
+      0 0 5px #8ae9ff,
+      0 0 10px #8ae9ff,
+      0 0 20px #00d8ff,
+      0 0 30px #00d8ff;
+    cursor: pointer; /* Indica que dá pra clicar */
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <div class="screen1">FELIZ DIA DOS PAIS</div>
+
+    <div class="screen2" style="display:none;">
+      <canvas id="pointsCanvas"></canvas>
+      <div class="screen2-text">FELIZ DIA DOS PAIS</div>
+    </div>
+
+    <div class="loading-screen" style="display:none;">
+      Carregando...
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+
+    <div class="final-screen" style="display:none;" title="Clique para brincar com as bolinhas">
+      <div>
+        Pai, obrigado por tudo que você faz por mim todos os dias.<br />
+        Você é meu herói, meu exemplo, e a base de tudo que eu sou.
+      </div>
+    </div>
+  </div>
+
+<script>
+  const screen1 = document.querySelector('.screen1');
+  const screen2 = document.querySelector('.screen2');
+  const loadingScreen = document.querySelector('.loading-screen');
+  const loadingProgress = document.querySelector('.loading-progress');
+  const finalScreen = document.querySelector('.final-screen');
+
+  const canvas = document.getElementById('pointsCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width, height;
+  let points = [];
+  const POINT_COUNT = 300;
+  const POINT_RADIUS = 2;
+  const HEART_SIZE = 12;
+  let animationId;
+
+  let mouse = {x: null, y: null, radius: 150};
+
+  let morphProgress = 0;
+  let morphing = false;
+  let heartPoints = [];
+  let allowSlowDown = false;
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function generatePoints() {
+    points = [];
+    for (let i = 0; i < POINT_COUNT; i++) {
+      points.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: (Math.random() - 0.5) * 0.1,
+        radius: POINT_RADIUS,
+      });
+    }
+  }
+
+  function heartShape(t, scale = HEART_SIZE) {
+    const x = 16 * Math.pow(Math.sin(t),3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+    return {x: x * scale, y: -y * scale};
+  }
+
+  function getHeartPoints(centerX, centerY) {
+    const heartPts = [];
+    const steps = POINT_COUNT;
+    for (let i = 0; i < steps; i++) {
+      const t = (i / steps) * 2 * Math.PI;
+      const pos = heartShape(t, HEART_SIZE);
+      heartPts.push({x: centerX + pos.x, y: centerY + pos.y});
+    }
+    return heartPts;
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    for(let i = 0; i < points.length; i++) {
+      points[i].x += points[i].vx;
+      points[i].y += points[i].vy;
+
+      if(points[i].x < 0 || points[i].x > width) points[i].vx *= -1;
+      if(points[i].y < 0 || points[i].y > height) points[i].vy *= -1;
+
+      if(!morphing && mouse.x !== null && mouse.y !== null) {
+        let dx = points[i].x - mouse.x;
+        let dy = points[i].y - mouse.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < mouse.radius) {
+          let angle = Math.atan2(dy, dx);
+          let repelForce = (mouse.radius - dist) / mouse.radius * 1.8;
+          points[i].vx += Math.cos(angle) * repelForce;
+          points[i].vy += Math.sin(angle) * repelForce;
+        }
+      }
+
+      // DESACELERAÇÃO SUAVE DAS BOLINHAS (após clique)
+      if (allowSlowDown) {
+        const friction = 0.95; // valor entre 0 e 1, quanto menor mais rápido para
+        points[i].vx *= friction;
+        points[i].vy *= friction;
+      }
+
+      if(morphing) {
+        points[i].x += (heartPoints[i].x - points[i].x) * 0.02;
+        points[i].y += (heartPoints[i].y - points[i].y) * 0.02;
+      }
+    }
+
+    if(morphing) {
+      morphProgress += 0.0025;
+      if(morphProgress >= 1) {
+        morphProgress = 1;
+        morphing = false;
+      }
+    }
+
+    for(let i = 0; i < points.length; i++) {
+      ctx.beginPath();
+      ctx.fillStyle = '#8ae9ff';
+      ctx.shadowColor = '#8ae9ff';
+      ctx.shadowBlur = 15;
+      ctx.arc(points[i].x, points[i].y, points[i].radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    animationId = requestAnimationFrame(animate);
+  }
+
+  function startAnimation() {
+    generatePoints();
+    heartPoints = getHeartPoints(width/2, height/2);
+    morphProgress = 0;
+    morphing = false;
+    allowSlowDown = false;
+    animate();
+
+    setTimeout(() => {
+      morphing = true;
+      morphProgress = 0;
+    }, 7000);
+  }
+
+  function stopAnimation() {
+    cancelAnimationFrame(animationId);
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  function showScreen(screen) {
+    screen1.style.display = 'none';
+    screen2.style.display = 'none';
+    loadingScreen.style.display = 'none';
+    finalScreen.style.display = 'none';
+
+    screen.style.display = screen === screen2 ? 'block' : 'flex';
+  }
+
+  // Fluxo principal
+  showScreen(screen1);
+  setTimeout(() => {
+    showScreen(screen2);
+    startAnimation();
+  }, 5000);
+
+  setTimeout(() => {
+    showScreen(loadingScreen);
+    stopAnimation();
+    simulateLoading().then(() => {
+      showScreen(finalScreen);
+    });
+  }, 15000);
+
+  // Clique para iniciar bolinhas depois do texto final
+  finalScreen.addEventListener('click', () => {
+    finalScreen.style.display = 'none';
+    screen2.style.display = 'block';
+    morphing = false;
+    morphProgress = 0;
+    allowSlowDown = true;  // ativa desaceleração suave
+    generatePoints();
+    animate();
+  });
+
+  function simulateLoading() {
+    return new Promise(resolve => {
+      let progress = 0;
+      loadingProgress.style.width = '0%';
+
+      const interval = setInterval(() => {
+        progress += 2 + Math.random() * 3;
+
+        if(progress >= 100) {
+          progress = 100;
+          loadingProgress.style.width = progress + '%';
+          clearInterval(interval);
+          setTimeout(resolve, 500);
+        } else {
+          loadingProgress.style.width = progress + '%';
+        }
+      }, 300);
+    });
+  }
+</script>
+</body>
+</html>
